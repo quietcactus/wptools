@@ -1,0 +1,181 @@
+/* WPTools — Unlinked Phone Checker styles */
+
+.wptools-phone-wrap {
+  max-width: 1200px;
+}
+
+.wptools-phone-description {
+  color: #50575e;
+  margin-bottom: 20px;
+}
+
+/* Post type selector */
+.wptools-phone-options {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 3px;
+  padding: 16px 20px 12px;
+  margin-bottom: 20px;
+}
+
+.wptools-phone-options h3 {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #1d2327;
+}
+
+.wptools-phone-type-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-bottom: 10px;
+}
+
+.wptools-phone-type-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.wptools-phone-type-label input[type="checkbox"] {
+  margin: 0;
+}
+
+.wptools-phone-type-slug {
+  color: #8c8f94;
+  font-size: 11px;
+}
+
+.wptools-phone-type-hint {
+  margin: 0;
+  font-size: 12px;
+  color: #8c8f94;
+  font-style: italic;
+}
+
+/* Toolbar */
+.wptools-phone-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.wptools-phone-cache-note {
+  font-size: 13px;
+  color: #50575e;
+  font-style: italic;
+}
+
+.wptools-phone-status {
+  font-size: 13px;
+  font-style: italic;
+  color: #50575e;
+}
+
+.wptools-phone-status.is-loading { color: #2271b1; }
+.wptools-phone-status.is-error   { color: #d63638; }
+
+/* Spinner */
+.wptools-phone-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #c3c4c7;
+  border-top-color: #2271b1;
+  border-radius: 50%;
+  animation: wptools-phone-spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+@keyframes wptools-phone-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty / notices */
+.wptools-phone-empty {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 3px;
+  padding: 30px 20px;
+  text-align: center;
+  color: #50575e;
+}
+
+.wptools-phone-notice {
+  margin-bottom: 16px !important;
+  padding: 10px 16px !important;
+}
+
+/* Table controls */
+.wptools-phone-table-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+#wptools-phone-filter {
+  min-width: 280px;
+}
+
+/* Results table */
+.wptools-phone-table {
+  table-layout: fixed;
+}
+
+.wptools-phone-table th {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.wptools-phone-table th:hover { color: #2271b1; }
+
+.wptools-phone-table .col-title   { width: 28%; }
+.wptools-phone-table .col-type    { width: 12%; }
+.wptools-phone-table .col-phone   { width: 18%; }
+.wptools-phone-table .col-fmt     { width: 28%; }
+.wptools-phone-table .col-actions { width: 14%; }
+
+.wptools-phone-table code {
+  font-size: 13px;
+  background: #f0f0f1;
+  padding: 2px 6px;
+  border-radius: 3px;
+  word-break: break-all;
+}
+
+.wptools-phone-badge {
+  display: inline-block;
+  background: #e8f0fe;
+  color: #1a56db;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.wptools-phone-fmt {
+  font-size: 12px;
+  color: #50575e;
+}
+
+.wptools-phone-row-hidden {
+  display: none;
+}
+
+.wptools-phone-sort-arrow {
+  font-size: 10px;
+  margin-left: 4px;
+}
