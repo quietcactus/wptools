@@ -4,25 +4,6 @@ A suite of standalone WordPress admin tools, all housed under a single plugin.
 
 ---
 
-## Directory Structure
-
-```
-wptools/
-├── wptools.php                  # Plugin bootstrap — defines constants, loads framework
-├── includes/
-│   └── loader.php               # Auto-discovers and loads tools, registers admin menu
-├── tools/
-│   └── phone-checker/           # One folder per tool
-│       ├── tool.php             # Entry point — registers tool with wptools_register_tool()
-│       ├── phone-checker.php    # All logic for this tool
-│       └── assets/
-│           ├── phone-checker.css
-│           └── phone-checker.js
-└── README.md
-```
-
----
-
 ## Adding a New Tool
 
 1. **Create a folder** under `tools/` using your tool's slug:
