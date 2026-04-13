@@ -69,8 +69,57 @@ function wptools_imageconv_compress($file_path) {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function wptools_imageconv_format_bytes($bytes) {
+  if ($bytes >= 1048576) {
+    return round($bytes / 1048576, 1) . ' MB';
+  }
+  if ($bytes >= 1024) {
+    return round($bytes / 1024, 1) . ' KB';
+  }
+  return $bytes . ' B';
+}
+
+// ---------------------------------------------------------------------------
 // AJAX handlers
 // ---------------------------------------------------------------------------
+
+function wptools_imageconv_ajax_get_images() {
+  check_ajax_referer(WPTOOLS_IMAGECONV_NONCE, 'nonce');
+
+  if (!current_user_can('manage_options')) {
+    wp_send_json_error('Insufficient permissions.');
+  }
+
+  $attachments = get_posts([
+    'post_type'      => 'attachment',
+    'post_status'    => 'inherit',
+    'posts_per_page' => -1,
+    'post_mime_type' => ['image/jpeg', 'image/png', 'image/webp'],
+  ]);
+
+  $images = [];
+
+  foreach ($attachments as $attachment) {
+    $file_path = get_attached_file($attachment->ID);
+    $file_size = ($file_path && file_exists($file_path)) ? filesize($file_path) : 0;
+
+    $images[] = [
+      'attachment_id'   => $attachment->ID,
+      'filename'        => basename(get_attached_file($attachment->ID)),
+      'mime_type'       => $attachment->post_mime_type,
+      'file_size_bytes' => $file_size,
+      'file_size_label' => wptools_imageconv_format_bytes($file_size),
+    ];
+  }
+
+  wp_send_json_success([
+    'images' => $images,
+    'count'  => count($images),
+  ]);
+}
 
 function wptools_imageconv_ajax_convert() {
   check_ajax_referer(WPTOOLS_IMAGECONV_NONCE, 'nonce');
@@ -115,8 +164,44 @@ function wptools_imageconv_render_page() {
     <p class="wptools-imageconv-description">
       <?php echo esc_html__('Convert JPG/PNG images to WebP or compress existing WebP images via the compress-or-die.com API.', 'wptools'); ?>
     </p>
+
     <div id="wptools-imageconv-app" class="wptools-imageconv-app">
-      <p><?php echo esc_html__('Image selection UI coming in Phase 2.', 'wptools'); ?></p>
+
+      <div class="wptools-imageconv-toolbar">
+        <label class="wptools-imageconv-select-all-label">
+          <input type="checkbox" id="wptools-imageconv-select-all" />
+          <?php echo esc_html__('Select all / Deselect all', 'wptools'); ?>
+        </label>
+        <span id="wptools-imageconv-selected-count" class="wptools-imageconv-selected-count"></span>
+      </div>
+
+      <div id="wptools-imageconv-list-wrap">
+        <p id="wptools-imageconv-loading" class="wptools-imageconv-loading">
+          <?php echo esc_html__('Loading images\xe2\x80\xa6', 'wptools'); ?>
+        </p>
+        <p id="wptools-imageconv-empty" class="wptools-imageconv-empty" style="display:none;">
+          <?php echo esc_html__('No JPG, PNG, or WebP images found in the Media Library.', 'wptools'); ?>
+        </p>
+        <table id="wptools-imageconv-table" class="wp-list-table widefat fixed striped wptools-imageconv-table" style="display:none;">
+          <thead>
+            <tr>
+              <th class="wptools-imageconv-col-cb check-column"><span class="screen-reader-text"><?php echo esc_html__('Select', 'wptools'); ?></span></th>
+              <th class="wptools-imageconv-col-name"><?php echo esc_html__('File Name', 'wptools'); ?></th>
+              <th class="wptools-imageconv-col-type"><?php echo esc_html__('Format', 'wptools'); ?></th>
+              <th class="wptools-imageconv-col-size"><?php echo esc_html__('Size', 'wptools'); ?></th>
+            </tr>
+          </thead>
+          <tbody id="wptools-imageconv-tbody">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="wptools-imageconv-actions" style="display:none;" id="wptools-imageconv-actions">
+        <button id="wptools-imageconv-process-btn" class="button button-primary" disabled>
+          <?php echo esc_html__('Convert / Compress', 'wptools'); ?>
+        </button>
+      </div>
+
     </div>
   </div>
   <?php
