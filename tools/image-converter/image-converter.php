@@ -165,6 +165,93 @@ function wptools_imageconv_ajax_compress() {
   wp_send_json_success(['stub' => true, 'action' => 'compress', 'attachment_id' => $attachment_id]);
 }
 
+function wptools_imageconv_ajax_process() {
+  check_ajax_referer(WPTOOLS_IMAGECONV_NONCE, 'nonce');
+
+  if (!current_user_can('manage_options')) {
+    wp_send_json_error('Insufficient permissions.');
+  }
+
+  $attachment_id   = isset($_POST['attachment_id']) ? absint($_POST['attachment_id']) : 0;
+  $delete_original = isset($_POST['delete_original']) ? (bool) absint($_POST['delete_original']) : false;
+
+  if ($attachment_id < 1) {
+    wp_send_json_error('Invalid attachment ID.');
+  }
+
+  $allowed   = ['image/jpeg', 'image/png', 'image/webp'];
+  $mime_type = get_post_mime_type($attachment_id);
+
+  if (!in_array($mime_type, $allowed, true)) {
+    wp_send_json_error('Attachment is not a supported image type.');
+  }
+
+  $file_path = get_attached_file($attachment_id);
+
+  if (!$file_path || !file_exists($file_path)) {
+    wp_send_json_error('File not found on disk.');
+  }
+
+  $orig_size = filesize($file_path);
+
+  if ($mime_type === 'image/webp') {
+    $result = wptools_imageconv_compress($file_path);
+  } else {
+    $result = wptools_imageconv_convert($file_path);
+  }
+
+  if (is_wp_error($result)) {
+    wp_send_json_error([
+      'attachment_id' => $attachment_id,
+      'error'         => $result->get_error_message(),
+    ]);
+  }
+
+  require_once ABSPATH . 'wp-admin/includes/image.php';
+
+  $out_path   = $result['path'];
+  $upload_dir = wp_upload_dir();
+  $filetype   = wp_check_filetype(basename($out_path), null);
+
+  $attachment_args = [
+    'guid'           => $upload_dir['baseurl'] . '/' . _wp_relative_upload_path($out_path),
+    'post_mime_type' => $filetype['type'],
+    'post_title'     => preg_replace('/\.[^.]+$/', '', basename($out_path)),
+    'post_content'   => '',
+    'post_status'    => 'inherit',
+  ];
+
+  $new_id = wp_insert_attachment($attachment_args, $out_path, 0);
+
+  if (is_wp_error($new_id) || $new_id < 1) {
+    wp_send_json_error(['attachment_id' => $attachment_id, 'error' => 'Failed to register attachment.']);
+  }
+
+  $metadata = wp_generate_attachment_metadata($new_id, $out_path);
+  wp_update_attachment_metadata($new_id, $metadata);
+
+  $new_size      = filesize($out_path);
+  $savings_bytes = $orig_size - $new_size;
+  $savings_pct   = $orig_size > 0 ? round(($savings_bytes / $orig_size) * 100, 1) : 0;
+
+  if ($delete_original) {
+    wp_delete_attachment($attachment_id, true);
+  }
+
+  wp_send_json_success([
+    'original_id'   => $attachment_id,
+    'new_id'        => $new_id,
+    'original_name' => basename($file_path),
+    'output_name'   => basename($out_path),
+    'original_size' => $orig_size,
+    'output_size'   => $new_size,
+    'savings_bytes' => $savings_bytes,
+    'savings_pct'   => $savings_pct,
+    'output_url'    => wp_get_attachment_url($new_id),
+    'original_url'  => $delete_original ? null : wp_get_attachment_url($attachment_id),
+  ]);
+}
+
 // ---------------------------------------------------------------------------
 // Rendering
 // ---------------------------------------------------------------------------
@@ -212,6 +299,58 @@ function wptools_imageconv_render_page() {
         <button id="wptools-imageconv-process-btn" class="button button-primary" disabled>
           <?php echo esc_html__('Convert / Compress', 'wptools'); ?>
         </button>
+      </div>
+
+      <div id="wptools-imageconv-results" style="display:none;">
+        <h3><?php echo esc_html__('Results', 'wptools'); ?></h3>
+        <table class="wp-list-table widefat fixed striped wptools-imageconv-results-table">
+          <thead>
+            <tr>
+              <th class="wptools-imageconv-col-original-name"><?php echo esc_html__('Original File', 'wptools'); ?></th>
+              <th class="wptools-imageconv-col-output-name"><?php echo esc_html__('Output File', 'wptools'); ?></th>
+              <th class="wptools-imageconv-col-orig-size"><?php echo esc_html__('Before', 'wptools'); ?></th>
+              <th class="wptools-imageconv-col-out-size"><?php echo esc_html__('After', 'wptools'); ?></th>
+              <th class="wptools-imageconv-col-savings"><?php echo esc_html__('Savings', 'wptools'); ?></th>
+              <th class="wptools-imageconv-col-status"><?php echo esc_html__('Status', 'wptools'); ?></th>
+            </tr>
+          </thead>
+          <tbody id="wptools-imageconv-results-tbody">
+          </tbody>
+        </table>
+      </div>
+
+      <div id="wptools-imageconv-preview" class="wptools-imageconv-preview" style="display:none;">
+        <h3><?php echo esc_html__('Before / After Preview', 'wptools'); ?></h3>
+        <div class="wptools-imageconv-preview-pair">
+          <div class="wptools-imageconv-preview-item">
+            <p class="wptools-imageconv-preview-label"><?php echo esc_html__('Before', 'wptools'); ?></p>
+            <img id="wptools-imageconv-preview-before" src="" alt="Before" width="0" height="0" />
+          </div>
+          <div class="wptools-imageconv-preview-item">
+            <p class="wptools-imageconv-preview-label"><?php echo esc_html__('After', 'wptools'); ?></p>
+            <img id="wptools-imageconv-preview-after" src="" alt="After" width="0" height="0" />
+          </div>
+        </div>
+      </div>
+
+      <div id="wptools-imageconv-modal" class="wptools-imageconv-modal-overlay" style="display:none;">
+        <div class="wptools-imageconv-modal-dialog">
+          <h2><?php echo esc_html__('Confirm Conversion', 'wptools'); ?></h2>
+          <p id="wptools-imageconv-modal-summary"></p>
+          <ul id="wptools-imageconv-modal-list"></ul>
+          <label class="wptools-imageconv-modal-delete-label">
+            <input type="checkbox" id="wptools-imageconv-delete-original" />
+            <?php echo esc_html__('Delete original after conversion', 'wptools'); ?>
+          </label>
+          <div class="wptools-imageconv-modal-actions">
+            <button id="wptools-imageconv-modal-confirm" class="button button-primary">
+              <?php echo esc_html__('Proceed', 'wptools'); ?>
+            </button>
+            <button id="wptools-imageconv-modal-cancel" class="button">
+              <?php echo esc_html__('Cancel', 'wptools'); ?>
+            </button>
+          </div>
+        </div>
       </div>
 
     </div>
