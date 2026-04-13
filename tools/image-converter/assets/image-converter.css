@@ -1,0 +1,18 @@
+/* WPTools — Image Converter styles */
+
+.wptools-imageconv-wrap {
+  max-width: 1200px;
+}
+
+.wptools-imageconv-description {
+  color: #50575e;
+  margin-bottom: 20px;
+}
+
+/* App container */
+.wptools-imageconv-app {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 3px;
+  padding: 30px 20px;
+}
