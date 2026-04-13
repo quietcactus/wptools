@@ -25,5 +25,6 @@ wptools_register_tool([
   'enqueue'    => 'wptools_imageconv_enqueue_assets',
 ]);
 
-add_action('wp_ajax_wptools_imageconv_convert',  'wptools_imageconv_ajax_convert');
-add_action('wp_ajax_wptools_imageconv_compress', 'wptools_imageconv_ajax_compress');
+add_action('wp_ajax_wptools_imageconv_convert',    'wptools_imageconv_ajax_convert');
+add_action('wp_ajax_wptools_imageconv_compress',   'wptools_imageconv_ajax_compress');
+add_action('wp_ajax_wptools_imageconv_get_images', 'wptools_imageconv_ajax_get_images');
