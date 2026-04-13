@@ -46,26 +46,38 @@ function wptools_imageconv_enqueue_assets($hook) {
 // API Engine
 // ---------------------------------------------------------------------------
 
-/**
- * Convert a JPG/PNG file to WebP via compress-or-die.com API.
- *
- * @param string $file_path Absolute server path to the source file.
- * @return array|WP_Error Response array on success, WP_Error on failure.
- */
 function wptools_imageconv_convert($file_path) {
-  // TODO Phase 3: POST to https://compress-or-die.com/api-v2 using wp_safe_remote_post()
-  return new WP_Error('not_implemented', 'Convert not yet implemented.');
+  $editor = wp_get_image_editor($file_path);
+  if (is_wp_error($editor)) {
+    return $editor;
+  }
+  if (!$editor->supports_mime_type('image/webp')) {
+    return new WP_Error('webp_unsupported', 'Server GD/Imagick does not support WebP.');
+  }
+  $info     = pathinfo($file_path);
+  $out_path = $info['dirname'] . '/' . $info['filename'] . '.webp';
+  if (file_exists($out_path)) {
+    return new WP_Error('file_exists', 'Output file already exists: ' . basename($out_path));
+  }
+  $editor->set_quality(82);
+  return $editor->save($out_path, 'image/webp');
 }
 
-/**
- * Compress a WebP file via compress-or-die.com API.
- *
- * @param string $file_path Absolute server path to the source WebP file.
- * @return array|WP_Error Response array on success, WP_Error on failure.
- */
 function wptools_imageconv_compress($file_path) {
-  // TODO Phase 3: POST to https://compress-or-die.com/api-v2 using wp_safe_remote_post()
-  return new WP_Error('not_implemented', 'Compress not yet implemented.');
+  $editor = wp_get_image_editor($file_path);
+  if (is_wp_error($editor)) {
+    return $editor;
+  }
+  if (!$editor->supports_mime_type('image/webp')) {
+    return new WP_Error('webp_unsupported', 'Server GD/Imagick does not support WebP.');
+  }
+  $info     = pathinfo($file_path);
+  $out_path = $info['dirname'] . '/' . $info['filename'] . '-min.webp';
+  if (file_exists($out_path)) {
+    return new WP_Error('file_exists', 'Output file already exists: ' . basename($out_path));
+  }
+  $editor->set_quality(75);
+  return $editor->save($out_path, 'image/webp');
 }
 
 // ---------------------------------------------------------------------------
@@ -162,7 +174,7 @@ function wptools_imageconv_render_page() {
   <div class="wrap wptools-imageconv-wrap">
     <h1><?php echo esc_html__('Image Converter', 'wptools'); ?></h1>
     <p class="wptools-imageconv-description">
-      <?php echo esc_html__('Convert JPG/PNG images to WebP or compress existing WebP images via the compress-or-die.com API.', 'wptools'); ?>
+      <?php echo esc_html__('Convert JPG/PNG images to WebP or compress existing WebP images.', 'wptools'); ?>
     </p>
 
     <div id="wptools-imageconv-app" class="wptools-imageconv-app">

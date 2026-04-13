@@ -28,3 +28,4 @@ wptools_register_tool([
 add_action('wp_ajax_wptools_imageconv_convert',    'wptools_imageconv_ajax_convert');
 add_action('wp_ajax_wptools_imageconv_compress',   'wptools_imageconv_ajax_compress');
 add_action('wp_ajax_wptools_imageconv_get_images', 'wptools_imageconv_ajax_get_images');
+add_action('wp_ajax_wptools_imageconv_process',    'wptools_imageconv_ajax_process');
