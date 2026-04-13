@@ -125,6 +125,162 @@
     console.error('[WPTools Image Converter] ' + msg);
   }
 
+  /* ── Modal ── */
+
+  function imageconv_output_name(filename) {
+    var dot  = filename.lastIndexOf('.');
+    var ext  = dot !== -1 ? filename.slice(dot + 1).toLowerCase() : '';
+    var base = dot !== -1 ? filename.slice(0, dot) : filename;
+    if (ext === 'webp') {
+      return base + '-min.webp';
+    }
+    return base + '.webp';
+  }
+
+  function imageconv_open_modal(ids) {
+    var $list = $('#wptools-imageconv-modal-list');
+    var html  = '';
+
+    ids.forEach(function (id) {
+      var $row     = $('input.wptools-imageconv-image-cb[data-id="' + id + '"]').closest('tr');
+      var filename = $row.find('.wptools-imageconv-col-name').text().trim();
+      var outName  = imageconv_output_name(filename);
+
+      html += '<li>' +
+        imageconv_esc(filename) + ' &rarr; ' + imageconv_esc(outName) +
+      '</li>';
+    });
+
+    var label = ids.length === 1 ? '1 image' : ids.length + ' images';
+    $('#wptools-imageconv-modal-summary').text('The following ' + label + ' will be processed:');
+    $list.html(html);
+    $('#wptools-imageconv-delete-original').prop('checked', false);
+    $('#wptools-imageconv-modal').show();
+  }
+
+  /* ── Processing ── */
+
+  function imageconv_js_format_bytes(bytes) {
+    if (bytes >= 1048576) { return (bytes / 1048576).toFixed(1) + ' MB'; }
+    if (bytes >= 1024)    { return (bytes / 1024).toFixed(1) + ' KB'; }
+    return bytes + ' B';
+  }
+
+  function imageconv_update_progress(done, total) {
+    var $btn = $('#wptools-imageconv-process-btn');
+    $btn.text('Processing ' + done + ' / ' + total + '…').prop('disabled', true);
+  }
+
+  function imageconv_process_next(ids, deleteOriginal, index, results) {
+    if (index >= ids.length) {
+      imageconv_show_results(ids, results);
+      return;
+    }
+
+    var id = ids[index];
+
+    $.post(ajaxUrl, {
+      action:          'wptools_imageconv_process',
+      attachment_id:   id,
+      delete_original: deleteOriginal ? 1 : 0,
+      nonce:           nonce,
+    })
+    .done(function (response) {
+      if (response.success) {
+        results.push({ id: id, success: true, data: response.data });
+      } else {
+        var errMsg = (response.data && response.data.error) ? response.data.error : (response.data || 'Unknown error.');
+        results.push({ id: id, success: false, error: errMsg });
+      }
+      imageconv_update_progress(index + 1, ids.length);
+      imageconv_process_next(ids, deleteOriginal, index + 1, results);
+    })
+    .fail(function () {
+      results.push({ id: id, success: false, error: 'Request failed.' });
+      imageconv_update_progress(index + 1, ids.length);
+      imageconv_process_next(ids, deleteOriginal, index + 1, results);
+    });
+  }
+
+  /* ── Results ── */
+
+  function imageconv_show_results(ids, results) {
+    var html = '';
+
+    results.forEach(function (r) {
+      if (r.success) {
+        var d        = r.data;
+        var savings  = d.savings_bytes > 0
+          ? imageconv_esc(imageconv_js_format_bytes(d.savings_bytes)) + ' (' + imageconv_esc(String(d.savings_pct)) + '%)'
+          : '0 B (0%)';
+        var savClass = d.savings_bytes > 0 ? 'wptools-imageconv-savings-positive' : 'wptools-imageconv-savings-zero';
+
+        html += '<tr>' +
+          '<td>' + imageconv_esc(d.original_name) + '</td>' +
+          '<td>' + imageconv_esc(d.output_name) + '</td>' +
+          '<td>' + imageconv_esc(imageconv_js_format_bytes(d.original_size)) + '</td>' +
+          '<td>' + imageconv_esc(imageconv_js_format_bytes(d.output_size)) + '</td>' +
+          '<td><span class="' + savClass + '">' + savings + '</span></td>' +
+          '<td><span class="wptools-imageconv-status-ok">Done</span></td>' +
+          '</tr>';
+      } else {
+        html += '<tr>' +
+          '<td colspan="5">' + imageconv_esc(String(r.id)) + '</td>' +
+          '<td><span class="wptools-imageconv-status-error">' + imageconv_esc(r.error) + '</span></td>' +
+          '</tr>';
+      }
+    });
+
+    $('#wptools-imageconv-results-tbody').html(html);
+    $('#wptools-imageconv-results').show();
+
+    $('#wptools-imageconv-process-btn').text('Convert / Compress').prop('disabled', false);
+
+    // Before/after preview: single-image success only
+    if (ids.length === 1 && results.length === 1 && results[0].success) {
+      var d = results[0].data;
+      if (d.output_url) {
+        $('#wptools-imageconv-preview-after').attr('src', d.output_url).attr('width', '').attr('height', '');
+      }
+      if (d.original_url) {
+        $('#wptools-imageconv-preview-before').attr('src', d.original_url).attr('width', '').attr('height', '');
+      }
+      if (d.original_url || d.output_url) {
+        $('#wptools-imageconv-preview').show();
+      }
+    }
+  }
+
+  /* ── Convert/Compress button → open modal ── */
+
+  $('#wptools-imageconv-process-btn').on('click', function () {
+    var ids = [];
+    $('.wptools-imageconv-image-cb:checked').each(function () {
+      ids.push($(this).data('id'));
+    });
+    if (ids.length === 0) { return; }
+    imageconv_open_modal(ids);
+  });
+
+  /* ── Modal: cancel ── */
+
+  $('#wptools-imageconv-modal-cancel').on('click', function () {
+    $('#wptools-imageconv-modal').hide();
+  });
+
+  /* ── Modal: confirm → start processing ── */
+
+  $('#wptools-imageconv-modal-confirm').on('click', function () {
+    var ids = [];
+    $('.wptools-imageconv-image-cb:checked').each(function () {
+      ids.push($(this).data('id'));
+    });
+    var deleteOriginal = $('#wptools-imageconv-delete-original').prop('checked');
+    $('#wptools-imageconv-modal').hide();
+    imageconv_update_progress(0, ids.length);
+    imageconv_process_next(ids, deleteOriginal, 0, []);
+  });
+
   /* ── Boot ── */
 
   imageconv_fetch_images();
