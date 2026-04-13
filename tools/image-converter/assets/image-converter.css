@@ -16,3 +16,82 @@
   border-radius: 3px;
   padding: 30px 20px;
 }
+
+/* Toolbar */
+.wptools-imageconv-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.wptools-imageconv-select-all-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.wptools-imageconv-selected-count {
+  color: #50575e;
+  font-size: 13px;
+}
+
+/* Loading / empty states */
+.wptools-imageconv-loading,
+.wptools-imageconv-empty {
+  color: #50575e;
+  padding: 16px 0;
+  margin: 0;
+}
+
+/* Table */
+.wptools-imageconv-table {
+  margin-top: 0;
+}
+
+.wptools-imageconv-table .wptools-imageconv-col-cb {
+  width: 38px;
+}
+
+.wptools-imageconv-table .wptools-imageconv-col-name {
+  width: 45%;
+}
+
+.wptools-imageconv-table .wptools-imageconv-col-type {
+  width: 90px;
+}
+
+.wptools-imageconv-table .wptools-imageconv-col-size {
+  width: 100px;
+}
+
+/* Format badges */
+.wptools-imageconv-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #fff;
+}
+
+.wptools-imageconv-badge-jpg {
+  background: #2271b1;
+}
+
+.wptools-imageconv-badge-png {
+  background: #007a32;
+}
+
+.wptools-imageconv-badge-webp {
+  background: #8650dc;
+}
+
+/* Actions bar */
+.wptools-imageconv-actions {
+  margin-top: 16px;
+}
