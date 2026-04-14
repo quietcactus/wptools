@@ -8,16 +8,19 @@
 
   /* ── Fetch images on load ── */
 
-  function imageconv_fetch_images() {
+  function imageconv_fetch_images(params) {
     $('#wptools-imageconv-loading').show();
     $('#wptools-imageconv-table').hide();
     $('#wptools-imageconv-empty').hide();
     $('#wptools-imageconv-actions').hide();
 
-    $.post(ajaxUrl, {
+    var postData = $.extend({
       action: 'wptools_imageconv_get_images',
       nonce:  nonce,
-    })
+      page:   1,
+    }, params || {});
+
+    $.post(ajaxUrl, postData)
     .done(function (response) {
       $('#wptools-imageconv-loading').hide();
 
@@ -283,8 +286,43 @@
     imageconv_process_next(ids, deleteOriginal, 0, []);
   });
 
+  /* ── Filter helpers ── */
+
+  function imageconv_get_filter_params() {
+    return {
+      search: $('#wptools-imageconv-search').val() || '',
+      type:   $('#wptools-imageconv-type').val()   || '',
+      year:   parseInt($('#wptools-imageconv-year').val(),  10) || 0,
+      month:  parseInt($('#wptools-imageconv-month').val(), 10) || 0,
+    };
+  }
+
+  /* ── Filter panel toggle ── */
+
+  $('#wptools-imageconv-filter-toggle').on('click', function () {
+    $('#wptools-imageconv-filter-panel').toggleClass('wptools-imageconv-filter-panel-open');
+    $(this).toggleClass('is-active');
+  });
+
+  /* ── Search input (debounced) ── */
+
+  var imageconv_search_timer = null;
+
+  $('#wptools-imageconv-search').on('input', function () {
+    clearTimeout(imageconv_search_timer);
+    imageconv_search_timer = setTimeout(function () {
+      imageconv_fetch_images(imageconv_get_filter_params());
+    }, 400);
+  });
+
+  /* ── Format / year / month selects ── */
+
+  $('#wptools-imageconv-type, #wptools-imageconv-year, #wptools-imageconv-month').on('change', function () {
+    imageconv_fetch_images(imageconv_get_filter_params());
+  });
+
   /* ── Boot ── */
 
-  imageconv_fetch_images();
+  imageconv_fetch_images(imageconv_get_filter_params());
 
 }(jQuery));
