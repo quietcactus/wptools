@@ -367,6 +367,7 @@ function wptools_imageconv_render_page() {
           <thead>
             <tr>
               <th class="wptools-imageconv-col-cb check-column"><span class="screen-reader-text"><?php echo esc_html__('Select', 'wptools'); ?></span></th>
+              <th class="wptools-imageconv-col-thumb"><?php echo esc_html__('Preview', 'wptools'); ?></th>
               <th class="wptools-imageconv-col-name"><?php echo esc_html__('File Name', 'wptools'); ?></th>
               <th class="wptools-imageconv-col-type"><?php echo esc_html__('Format', 'wptools'); ?></th>
               <th class="wptools-imageconv-col-size"><?php echo esc_html__('Size', 'wptools'); ?></th>

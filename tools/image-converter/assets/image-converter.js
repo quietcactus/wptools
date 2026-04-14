@@ -28,7 +28,7 @@
 
       var data = response.data;
 
-      if (data.count === 0) {
+      if (data.total === 0) {
         $('#wptools-imageconv-empty').show();
         return;
       }
@@ -50,11 +50,13 @@
 
     images.forEach(function (img) {
       var mimeShort = imageconv_mime_short(img.mime_type);
+      var thumbHtml = img.thumbnail_html || '';
 
       html += '<tr>' +
         '<td class="wptools-imageconv-col-cb">' +
           '<input type="checkbox" class="wptools-imageconv-image-cb" data-id="' + imageconv_esc(String(img.attachment_id)) + '" />' +
         '</td>' +
+        '<td class="wptools-imageconv-col-thumb">' + thumbHtml + '</td>' +
         '<td class="wptools-imageconv-col-name">' + imageconv_esc(img.filename) + '</td>' +
         '<td class="wptools-imageconv-col-type">' +
           '<span class="wptools-imageconv-badge wptools-imageconv-badge-' + imageconv_esc(mimeShort) + '">' +
