@@ -403,6 +403,17 @@ function wptools_imageconv_render_page() {
               ?>
             </select>
           </div>
+          <div class="wptools-imageconv-filter-group">
+            <label for="wptools-imageconv-sort"><?php echo esc_html__('Sort', 'wptools'); ?></label>
+            <select id="wptools-imageconv-sort" class="wptools-imageconv-filter-select">
+              <option value="date-DESC"><?php echo esc_html__('Newest first', 'wptools'); ?></option>
+              <option value="date-ASC"><?php echo esc_html__('Oldest first', 'wptools'); ?></option>
+              <option value="filesize-DESC"><?php echo esc_html__('Largest first', 'wptools'); ?></option>
+              <option value="filesize-ASC"><?php echo esc_html__('Smallest first', 'wptools'); ?></option>
+              <option value="title-ASC"><?php echo esc_html__('Name: A–Z', 'wptools'); ?></option>
+              <option value="title-DESC"><?php echo esc_html__('Name: Z–A', 'wptools'); ?></option>
+            </select>
+          </div>
         </div>
       </div>
 
