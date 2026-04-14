@@ -448,6 +448,8 @@ function wptools_imageconv_render_page() {
           <tbody id="wptools-imageconv-tbody">
           </tbody>
         </table>
+        <p id="wptools-imageconv-result-count" class="wptools-imageconv-result-count" style="display:none;"></p>
+        <div id="wptools-imageconv-pagination" class="wptools-imageconv-pagination" style="display:none;" aria-label="<?php echo esc_attr__('Pagination', 'wptools'); ?>"></div>
       </div>
 
       <div class="wptools-imageconv-actions" style="display:none;" id="wptools-imageconv-actions">
