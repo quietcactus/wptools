@@ -348,12 +348,73 @@ function wptools_imageconv_render_page() {
 
     <div id="wptools-imageconv-app" class="wptools-imageconv-app">
 
+      <div id="wptools-imageconv-filter-panel" class="wptools-imageconv-filter-panel">
+        <div class="wptools-imageconv-filter-row">
+          <div class="wptools-imageconv-filter-group">
+            <label for="wptools-imageconv-search"><?php echo esc_html__('Search', 'wptools'); ?></label>
+            <input
+              type="text"
+              id="wptools-imageconv-search"
+              class="wptools-imageconv-filter-input"
+              placeholder="<?php echo esc_attr__('Filename or title', 'wptools'); ?>"
+            />
+          </div>
+          <div class="wptools-imageconv-filter-group">
+            <label for="wptools-imageconv-type"><?php echo esc_html__('Format', 'wptools'); ?></label>
+            <select id="wptools-imageconv-type" class="wptools-imageconv-filter-select">
+              <option value=""><?php echo esc_html__('All Formats', 'wptools'); ?></option>
+              <option value="jpg"><?php echo esc_html__('JPG', 'wptools'); ?></option>
+              <option value="png"><?php echo esc_html__('PNG', 'wptools'); ?></option>
+              <option value="webp"><?php echo esc_html__('WebP', 'wptools'); ?></option>
+            </select>
+          </div>
+          <div class="wptools-imageconv-filter-group">
+            <label for="wptools-imageconv-year"><?php echo esc_html__('Year', 'wptools'); ?></label>
+            <select id="wptools-imageconv-year" class="wptools-imageconv-filter-select">
+              <option value=""><?php echo esc_html__('All Years', 'wptools'); ?></option>
+              <?php
+              global $wpdb;
+              $years = $wpdb->get_col(
+                "SELECT DISTINCT YEAR(post_date) FROM {$wpdb->posts}
+                 WHERE post_type = 'attachment'
+                   AND post_status = 'inherit'
+                   AND post_mime_type IN ('image/jpeg','image/png','image/webp')
+                 ORDER BY post_date DESC"
+              );
+              foreach ($years as $y) {
+                echo '<option value="' . esc_attr($y) . '">' . esc_html($y) . '</option>';
+              }
+              ?>
+            </select>
+          </div>
+          <div class="wptools-imageconv-filter-group">
+            <label for="wptools-imageconv-month"><?php echo esc_html__('Month', 'wptools'); ?></label>
+            <select id="wptools-imageconv-month" class="wptools-imageconv-filter-select">
+              <option value=""><?php echo esc_html__('All Months', 'wptools'); ?></option>
+              <?php
+              $month_names = [
+                1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+                5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+                9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
+              ];
+              foreach ($month_names as $num => $name) {
+                echo '<option value="' . esc_attr($num) . '">' . esc_html($name) . '</option>';
+              }
+              ?>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <div class="wptools-imageconv-toolbar">
         <label class="wptools-imageconv-select-all-label">
           <input type="checkbox" id="wptools-imageconv-select-all" />
           <?php echo esc_html__('Select all / Deselect all', 'wptools'); ?>
         </label>
         <span id="wptools-imageconv-selected-count" class="wptools-imageconv-selected-count"></span>
+        <button id="wptools-imageconv-filter-toggle" class="button wptools-imageconv-filter-toggle" type="button">
+          <?php echo esc_html__('Filters', 'wptools'); ?>
+        </button>
       </div>
 
       <div id="wptools-imageconv-list-wrap">
