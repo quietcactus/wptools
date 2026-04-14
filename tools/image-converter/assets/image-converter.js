@@ -368,6 +368,16 @@
     imageconv_fetch_images(imageconv_get_filter_params());
   });
 
+  /* ── Pagination ── */
+
+  $(document).on('click', '.wptools-imageconv-page-btn:not([disabled])', function () {
+    var page = parseInt($(this).data('page'), 10);
+    if (!page || page < 1) { return; }
+    var params = imageconv_get_filter_params();
+    params.page = page;
+    imageconv_fetch_images(params);
+  });
+
   /* ── Boot ── */
 
   imageconv_fetch_images(imageconv_get_filter_params());
