@@ -238,3 +238,54 @@
   border-radius: 2px;
   display: block;
 }
+
+/* Filter panel */
+.wptools-imageconv-filter-panel {
+  display: none;
+  border: 1px solid #c3c4c7;
+  border-radius: 3px;
+  background: #f6f7f7;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.wptools-imageconv-filter-panel.wptools-imageconv-filter-panel-open {
+  display: block;
+}
+
+.wptools-imageconv-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.wptools-imageconv-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.wptools-imageconv-filter-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #50575e;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.wptools-imageconv-filter-input {
+  width: 220px;
+}
+
+.wptools-imageconv-filter-select {
+  min-width: 140px;
+}
+
+/* Toggle button modifier — active state */
+.wptools-imageconv-filter-toggle.is-active {
+  background: #2271b1;
+  border-color: #2271b1;
+  color: #fff;
+}
