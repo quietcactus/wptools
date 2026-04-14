@@ -69,7 +69,10 @@ Plans:
   2. User can select "largest" or "smallest" and see the image list reorder by file size
   3. User can select "A–Z" or "Z–A" and see the image list reorder by filename
   4. Sort selection persists alongside active search and filter values when the list refreshes
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [x] 06-01-PLAN.md — Sort filter group HTML in PHP render function (select with 6 combined orderby-order options)
+- [x] 06-02-PLAN.md — JS wiring: extend imageconv_get_filter_params with orderby+order, add sort change handler
 **UI hint**: yes
 
 ### Phase 7: Pagination UI
@@ -90,7 +93,7 @@ Plans:
 | 1. Tool Scaffold + API Layer | v1.0 | 1/1 | Complete | 2026-04-13 |
 | 2. Media Library Selector | v1.0 | 2/2 | Complete | 2026-04-13 |
 | 3. Confirmation, Processing & Results | v1.0 | 2/2 | Complete | 2026-04-13 |
-| 4. Backend Extension + Thumbnails | v1.1 | 0/2 | Not started | - |
-| 5. Filter Panel, Search, and Filters | v1.1 | 0/2 | Not started | - |
-| 6. Sort Controls | v1.1 | 0/? | Not started | - |
+| 4. Backend Extension + Thumbnails | v1.1 | 2/2 | Complete | 2026-04-14 |
+| 5. Filter Panel, Search, and Filters | v1.1 | 2/2 | Complete | 2026-04-14 |
+| 6. Sort Controls | v1.1 | 2/2 | Complete | 2026-04-14 |
 | 7. Pagination UI | v1.1 | 0/? | Not started | - |
