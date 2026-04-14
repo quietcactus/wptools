@@ -13,6 +13,8 @@
     $('#wptools-imageconv-table').hide();
     $('#wptools-imageconv-empty').hide();
     $('#wptools-imageconv-actions').hide();
+    $('#wptools-imageconv-pagination').hide().empty();
+    $('#wptools-imageconv-result-count').hide();
 
     var postData = $.extend({
       action: 'wptools_imageconv_get_images',
@@ -33,12 +35,20 @@
 
       if (data.total === 0) {
         $('#wptools-imageconv-empty').show();
+        $('#wptools-imageconv-pagination').hide().empty();
+        $('#wptools-imageconv-result-count').hide();
         return;
       }
 
       imageconv_render_rows(data.images);
       $('#wptools-imageconv-table').show();
       $('#wptools-imageconv-actions').show();
+      var startItem = (data.page - 1) * 50 + 1;
+      var endItem   = Math.min(data.page * 50, data.total);
+      $('#wptools-imageconv-result-count')
+        .text('Showing ' + startItem + '\u2013' + endItem + ' of ' + data.total + ' images')
+        .show();
+      imageconv_render_pagination(data.page, data.total_pages);
     })
     .fail(function () {
       $('#wptools-imageconv-loading').hide();
@@ -128,6 +138,35 @@
 
   function imageconv_show_error(msg) {
     console.error('[WPTools Image Converter] ' + msg);
+  }
+
+  function imageconv_render_pagination(currentPage, totalPages) {
+    var $pag = $('#wptools-imageconv-pagination');
+
+    if (totalPages <= 1) {
+      $pag.hide().empty();
+      return;
+    }
+
+    var html = '';
+
+    html += '<button type="button" class="wptools-imageconv-page-btn" data-page="' + (currentPage - 1) + '"';
+    if (currentPage <= 1) { html += ' disabled'; }
+    html += '>&laquo; Prev</button>';
+
+    for (var p = 1; p <= totalPages; p++) {
+      html += '<button type="button" class="wptools-imageconv-page-btn';
+      if (p === currentPage) { html += ' is-current'; }
+      html += '" data-page="' + p + '"';
+      if (p === currentPage) { html += ' disabled'; }
+      html += '>' + p + '</button>';
+    }
+
+    html += '<button type="button" class="wptools-imageconv-page-btn" data-page="' + (currentPage + 1) + '"';
+    if (currentPage >= totalPages) { html += ' disabled'; }
+    html += '>Next &raquo;</button>';
+
+    $pag.html(html).show();
   }
 
   /* ── Modal ── */
