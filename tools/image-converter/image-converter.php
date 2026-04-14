@@ -105,16 +105,85 @@ function wptools_imageconv_ajax_get_images() {
     wp_send_json_error('Insufficient permissions.');
   }
 
-  $attachments = get_posts([
+  // --- Sanitize and read params ---
+  $search   = isset($_POST['search'])   ? sanitize_text_field(wp_unslash($_POST['search']))   : '';
+  $type     = isset($_POST['type'])     ? sanitize_text_field(wp_unslash($_POST['type']))     : '';
+  $year     = isset($_POST['year'])     ? absint($_POST['year'])     : 0;
+  $month    = isset($_POST['month'])    ? absint($_POST['month'])    : 0;
+  $orderby  = isset($_POST['orderby'])  ? sanitize_text_field(wp_unslash($_POST['orderby']))  : 'date';
+  $order    = isset($_POST['order'])    ? strtoupper(sanitize_text_field(wp_unslash($_POST['order']))) : 'DESC';
+  $page     = isset($_POST['page'])     ? max(1, absint($_POST['page']))     : 1;
+  $per_page = isset($_POST['per_page']) ? max(1, absint($_POST['per_page'])) : 50;
+
+  // --- Validate enum params ---
+  $allowed_types   = ['jpg', 'png', 'webp', ''];
+  $allowed_orderby = ['date', 'filesize', 'title'];
+  $allowed_order   = ['ASC', 'DESC'];
+
+  if (!in_array($type, $allowed_types, true)) {
+    $type = '';
+  }
+  if (!in_array($orderby, $allowed_orderby, true)) {
+    $orderby = 'date';
+  }
+  if (!in_array($order, $allowed_order, true)) {
+    $order = 'DESC';
+  }
+
+  // --- Build mime type filter ---
+  $mime_map = [
+    'jpg'  => 'image/jpeg',
+    'png'  => 'image/png',
+    'webp' => 'image/webp',
+  ];
+  $post_mime_type = $type !== '' && isset($mime_map[$type])
+    ? [$mime_map[$type]]
+    : ['image/jpeg', 'image/png', 'image/webp'];
+
+  // --- Build WP_Query orderby ---
+  $wp_orderby = 'date';
+  if ($orderby === 'title') {
+    $wp_orderby = 'title';
+  } elseif ($orderby === 'filesize') {
+    // filesize is metadata; sort by meta_value_num after joining _wp_attached_file
+    // WP_Query does not sort by filesize natively — sort by date, re-sort in PHP
+    $wp_orderby = 'date';
+  }
+
+  // --- Query args ---
+  $query_args = [
     'post_type'      => 'attachment',
     'post_status'    => 'inherit',
-    'posts_per_page' => -1,
-    'post_mime_type' => ['image/jpeg', 'image/png', 'image/webp'],
-  ]);
+    'post_mime_type' => $post_mime_type,
+    'posts_per_page' => $per_page,
+    'paged'          => $page,
+    'orderby'        => $wp_orderby,
+    'order'          => $order,
+    'no_found_rows'  => false,
+  ];
+
+  if ($search !== '') {
+    $query_args['s'] = $search;
+  }
+  if ($year > 0) {
+    $query_args['date_query'][] = ['year' => $year];
+  }
+  if ($month > 0) {
+    if (!isset($query_args['date_query'])) {
+      $query_args['date_query'] = [];
+    }
+    $query_args['date_query'][] = ['month' => $month];
+    if (count($query_args['date_query']) > 1) {
+      $query_args['date_query']['relation'] = 'AND';
+    }
+  }
+
+  $query = new WP_Query($query_args);
+  $total = (int) $query->found_posts;
+  $total_pages = $per_page > 0 ? (int) ceil($total / $per_page) : 1;
 
   $images = [];
-
-  foreach ($attachments as $attachment) {
+  foreach ($query->posts as $attachment) {
     $file_path = get_attached_file($attachment->ID);
     $file_size = ($file_path && file_exists($file_path)) ? filesize($file_path) : 0;
 
@@ -124,12 +193,25 @@ function wptools_imageconv_ajax_get_images() {
       'mime_type'       => $attachment->post_mime_type,
       'file_size_bytes' => $file_size,
       'file_size_label' => wptools_imageconv_format_bytes($file_size),
+      'thumbnail_html'  => wp_get_attachment_image($attachment->ID, 'thumbnail'),
     ];
   }
 
+  // --- Re-sort by filesize in PHP when orderby=filesize ---
+  if ($orderby === 'filesize') {
+    usort($images, function ($a, $b) use ($order) {
+      if ($order === 'ASC') {
+        return $a['file_size_bytes'] - $b['file_size_bytes'];
+      }
+      return $b['file_size_bytes'] - $a['file_size_bytes'];
+    });
+  }
+
   wp_send_json_success([
-    'images' => $images,
-    'count'  => count($images),
+    'images'      => $images,
+    'total'       => $total,
+    'page'        => $page,
+    'total_pages' => $total_pages,
   ]);
 }
 
