@@ -289,11 +289,15 @@
   /* ── Filter helpers ── */
 
   function imageconv_get_filter_params() {
+    var sortVal = $('#wptools-imageconv-sort').val() || 'date-DESC';
+    var sortParts = sortVal.split('-');
     return {
-      search: $('#wptools-imageconv-search').val() || '',
-      type:   $('#wptools-imageconv-type').val()   || '',
-      year:   parseInt($('#wptools-imageconv-year').val(),  10) || 0,
-      month:  parseInt($('#wptools-imageconv-month').val(), 10) || 0,
+      search:  $('#wptools-imageconv-search').val() || '',
+      type:    $('#wptools-imageconv-type').val()   || '',
+      year:    parseInt($('#wptools-imageconv-year').val(),  10) || 0,
+      month:   parseInt($('#wptools-imageconv-month').val(), 10) || 0,
+      orderby: sortParts[0] || 'date',
+      order:   sortParts[1] || 'DESC',
     };
   }
 
@@ -318,6 +322,10 @@
   /* ── Format / year / month selects ── */
 
   $('#wptools-imageconv-type, #wptools-imageconv-year, #wptools-imageconv-month').on('change', function () {
+    imageconv_fetch_images(imageconv_get_filter_params());
+  });
+
+  $('#wptools-imageconv-sort').on('change', function () {
     imageconv_fetch_images(imageconv_get_filter_params());
   });
 
