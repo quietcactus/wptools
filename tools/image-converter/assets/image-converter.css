@@ -289,3 +289,52 @@
   border-color: #2271b1;
   color: #fff;
 }
+
+/* Pagination */
+.wptools-imageconv-result-count {
+  color: #50575e;
+  font-size: 13px;
+  margin: 12px 0 0;
+}
+
+.wptools-imageconv-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.wptools-imageconv-page-btn {
+  min-width: 32px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid #c3c4c7;
+  border-radius: 3px;
+  background: #fff;
+  color: #2271b1;
+  font-size: 13px;
+  line-height: 28px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.wptools-imageconv-page-btn:hover {
+  border-color: #2271b1;
+  background: #f0f6fc;
+}
+
+.wptools-imageconv-page-btn.is-current {
+  background: #2271b1;
+  border-color: #2271b1;
+  color: #fff;
+  cursor: default;
+  font-weight: 600;
+}
+
+.wptools-imageconv-page-btn:disabled,
+.wptools-imageconv-page-btn[disabled] {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
