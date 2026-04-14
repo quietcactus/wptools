@@ -83,7 +83,10 @@ Plans:
   1. User can click next/previous (or page number) controls to navigate between pages
   2. Active search, filter, and sort state is preserved when navigating between pages
   3. The current page number and total result count are visible on screen at all times
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 07-01-PLAN.md — Pagination HTML shells in PHP render function + pagination CSS
+- [ ] 07-02-PLAN.md — JS wiring: imageconv_render_pagination(), result count update, page button click handler
 **UI hint**: yes
 
 ## Progress
@@ -96,4 +99,4 @@ Plans:
 | 4. Backend Extension + Thumbnails | v1.1 | 2/2 | Complete | 2026-04-14 |
 | 5. Filter Panel, Search, and Filters | v1.1 | 2/2 | Complete | 2026-04-14 |
 | 6. Sort Controls | v1.1 | 2/2 | Complete | 2026-04-14 |
-| 7. Pagination UI | v1.1 | 0/? | Not started | - |
+| 7. Pagination UI | v1.1 | 0/2 | Not started | - |
